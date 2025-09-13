@@ -63,3 +63,7 @@ func (c *Config) SetUser(userName string) error {
 	}
 	return nil
 }
+
+// func test() error {
+// 	return nil
+// }
