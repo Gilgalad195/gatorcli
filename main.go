@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/Gilgalad195/gatorcli/internal/config"
 )
@@ -9,16 +10,30 @@ import (
 func main() {
 	cfg, err := config.Read()
 	if err != nil {
-		fmt.Printf("error reading file: %v", err)
+		fmt.Printf("error reading file: %v\n", err)
 		return
 	}
-	cfg.SetUser("Stephen")
 
-	cfgUpdated, err := config.Read()
-	if err != nil {
-		fmt.Printf("error reading file: %v", err)
-		return
+	var s state
+	s.configPointer = &cfg
+	var cmds commands
+	cmds.commandMap = make(map[string]func(*state, command) error)
+
+	cmds.register("login", handlerLogin)
+	if len(os.Args) < 2 {
+		fmt.Println("please enter a command")
+		os.Exit(1)
 	}
-	fmt.Printf("db_url: %s\n", cfgUpdated.DBUrl)
-	fmt.Printf("current_user_name: %s\n", cfgUpdated.CurrentUserName)
+	cmdName := os.Args[1]
+	args := os.Args[2:]
+
+	var cmd command
+	cmd.name = cmdName
+	cmd.args = args
+
+	if err := cmds.run(&s, cmd); err != nil {
+		fmt.Printf("error occurred running command: %v\n", err)
+		os.Exit(1)
+	}
+
 }
