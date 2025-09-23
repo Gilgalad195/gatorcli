@@ -1,10 +1,13 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"os"
 
 	"github.com/Gilgalad195/gatorcli/internal/config"
+	"github.com/Gilgalad195/gatorcli/internal/database"
+	_ "github.com/lib/pq"
 )
 
 func main() {
@@ -15,15 +18,27 @@ func main() {
 	}
 
 	var s state
-	s.configPointer = &cfg
+	s.cfg = &cfg
 	var cmds commands
 	cmds.commandMap = make(map[string]func(*state, command) error)
 
-	cmds.register("login", handlerLogin)
+	db, err := sql.Open("postgres", s.cfg.DBUrl)
+	if err != nil {
+		fmt.Printf("error opening database: %v\n", err)
+		return
+	}
+
+	dbQueries := database.New(db)
+	s.db = dbQueries
+
 	if len(os.Args) < 2 {
 		fmt.Println("please enter a command")
 		os.Exit(1)
 	}
+
+	cmds.register("login", handlerLogin)
+	cmds.register("register", handlerRegister)
+
 	cmdName := os.Args[1]
 	args := os.Args[2:]
 
