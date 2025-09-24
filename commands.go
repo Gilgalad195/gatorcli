@@ -101,10 +101,26 @@ func handlerRegister(s *state, cmd command) error {
 
 func handlerReset(s *state, cmd command) error {
 	ctx := context.Background()
-	err := s.db.ResetDatase(ctx)
+	err := s.db.ResetDatabase(ctx)
 	if err != nil {
-		fmt.Printf("error resetting table: %v", err)
+		fmt.Printf("error resetting table: %v\n", err)
 		os.Exit(1)
+	}
+	return nil
+}
+
+func handlerUsers(s *state, cmd command) error {
+	ctx := context.Background()
+	users, err := s.db.GetUsers(ctx)
+	if err != nil {
+		fmt.Printf("error getting users: %v", err)
+	}
+	for _, user := range users {
+		if user.Name == s.cfg.CurrentUserName {
+			fmt.Printf("* %s (current)\n", user.Name)
+		} else {
+			fmt.Printf("* %s\n", user.Name)
+		}
 	}
 	return nil
 }
