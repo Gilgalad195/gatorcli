@@ -95,10 +95,16 @@ func handlerRegister(s *state, cmd command) error {
 		return fmt.Errorf("unable to create user: %v", err)
 	}
 	s.cfg.SetUser(user.Name)
-	fmt.Printf("User %s was registered:\n", user.Name)
-	log.Printf("- %v\n", user.ID)
-	log.Printf("- %v\n", user.CreatedAt)
-	log.Printf("- %v\n", user.UpdatedAt)
-	log.Printf("- %s\n", user.Name)
+	log.Printf("User %s was registered.\n", user.Name)
+	return nil
+}
+
+func handlerReset(s *state, cmd command) error {
+	ctx := context.Background()
+	err := s.db.ResetDatase(ctx)
+	if err != nil {
+		fmt.Printf("error resetting table: %v", err)
+		os.Exit(1)
+	}
 	return nil
 }
