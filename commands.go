@@ -10,6 +10,7 @@ import (
 
 	"github.com/Gilgalad195/gatorcli/internal/config"
 	"github.com/Gilgalad195/gatorcli/internal/database"
+	"github.com/Gilgalad195/gatorcli/internal/webconn"
 	"github.com/google/uuid"
 )
 
@@ -122,5 +123,15 @@ func handlerUsers(s *state, cmd command) error {
 			fmt.Printf("* %s\n", user.Name)
 		}
 	}
+	return nil
+}
+
+func handlerAgg(s *state, cmd command) error {
+	ctx := context.Background()
+	rssFeed, err := webconn.FetchFeed(ctx, "https://www.wagslane.dev/index.xml")
+	if err != nil {
+		return err
+	}
+	fmt.Printf("%+v\n", rssFeed)
 	return nil
 }

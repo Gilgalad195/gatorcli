@@ -3,6 +3,7 @@ package webconn
 import (
 	"context"
 	"encoding/xml"
+	"html"
 	"io"
 	"net/http"
 	"time"
@@ -14,8 +15,8 @@ var client = &http.Client{
 	Timeout: time.Second * 10,
 }
 
-func FetchFeed(ctx *context.Context, feedURL string) (*rss.RSSFeed, error) {
-	req, err := http.NewRequestWithContext(*ctx, "GET", feedURL, nil)
+func FetchFeed(ctx context.Context, feedURL string) (*rss.RSSFeed, error) {
+	req, err := http.NewRequestWithContext(ctx, "GET", feedURL, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -36,5 +37,17 @@ func FetchFeed(ctx *context.Context, feedURL string) (*rss.RSSFeed, error) {
 	if err := xml.Unmarshal(body, &response); err != nil {
 		return nil, err
 	}
+
+	unescapeHelper(&response)
+
 	return &response, nil
+}
+
+func unescapeHelper(response *rss.RSSFeed) {
+	response.Channel.Title = html.UnescapeString(response.Channel.Title)
+	response.Channel.Description = html.UnescapeString(response.Channel.Description)
+	for i, item := range response.Channel.Item {
+		response.Channel.Item[i].Title = html.UnescapeString(item.Title)
+		response.Channel.Item[i].Description = html.UnescapeString(item.Description)
+	}
 }
