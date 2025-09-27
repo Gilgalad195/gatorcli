@@ -111,6 +111,7 @@ func handlerReset(s *state, cmd command) error {
 }
 
 func handlerUsers(s *state, cmd command) error {
+	fmt.Println("Retrieving users...")
 	ctx := context.Background()
 	users, err := s.db.GetUsers(ctx)
 	if err != nil {
@@ -163,12 +164,31 @@ func handlerAddFeed(s *state, cmd command) error {
 	}
 
 	fmt.Println("New feed was created:")
-	fmt.Printf("* %v\n", feed.ID)
-	fmt.Printf("* %v\n", feed.CreatedAt)
-	fmt.Printf("* %v\n", feed.UpdatedAt)
-	fmt.Printf("* %v\n", feed.Name)
-	fmt.Printf("* %v\n", feed.Url)
-	fmt.Printf("* %v\n", feed.UserID)
+	fmt.Printf("* id: %v\n", feed.ID)
+	fmt.Printf("* created_id: %v\n", feed.CreatedAt)
+	fmt.Printf("* updated_at: %v\n", feed.UpdatedAt)
+	fmt.Printf("* name: %v\n", feed.Name)
+	fmt.Printf("* url: %v\n", feed.Url)
+	fmt.Printf("* user_id: %v\n", feed.UserID)
 
+	return nil
+}
+
+func handlerFeeds(s *state, cmd command) error {
+	fmt.Println("Retrieving feeds...")
+	ctx := context.Background()
+	feeds, err := s.db.GetFeeds(ctx)
+	if err != nil {
+		fmt.Printf("error getting feeds: %v", err)
+	}
+	for _, feed := range feeds {
+		fmt.Printf("Feed Name: %v\n", feed.Name)
+		fmt.Printf("* URL: %v\n", feed.Url)
+		userName, err := s.db.GetUserName(ctx, feed.UserID)
+		if err != nil {
+			return err
+		}
+		fmt.Printf("* Created by: %v\n", userName)
+	}
 	return nil
 }
