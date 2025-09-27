@@ -35,7 +35,7 @@ func (c *commands) run(s *state, cmd command) error {
 	}
 	err := f(s, cmd)
 	if err != nil {
-		return fmt.Errorf("error occurred running command: %v", err)
+		return err
 	}
 	return nil
 }
@@ -133,5 +133,42 @@ func handlerAgg(s *state, cmd command) error {
 		return err
 	}
 	fmt.Printf("%+v\n", rssFeed)
+	return nil
+}
+
+func handlerAddFeed(s *state, cmd command) error {
+	if len(cmd.args) < 2 {
+		return fmt.Errorf("this function expects 2 arguments: name and url of the feed")
+	}
+	ctx := context.Background()
+	user, err := s.db.GetUser(ctx, s.cfg.CurrentUserName)
+	if err != nil {
+		return err
+	}
+	feedName := cmd.args[0]
+	feedURL := cmd.args[1]
+
+	newFeed := database.CreateFeedParams{
+		ID:        uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		Name:      feedName,
+		Url:       feedURL,
+		UserID:    user.ID,
+	}
+
+	feed, err := s.db.CreateFeed(ctx, newFeed)
+	if err != nil {
+		return fmt.Errorf("unable to create feed: %v", err)
+	}
+
+	fmt.Println("New feed was created:")
+	fmt.Printf("* %v\n", feed.ID)
+	fmt.Printf("* %v\n", feed.CreatedAt)
+	fmt.Printf("* %v\n", feed.UpdatedAt)
+	fmt.Printf("* %v\n", feed.Name)
+	fmt.Printf("* %v\n", feed.Url)
+	fmt.Printf("* %v\n", feed.UserID)
+
 	return nil
 }
