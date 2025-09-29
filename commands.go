@@ -163,7 +163,19 @@ func handlerAddFeed(s *state, cmd command) error {
 		return fmt.Errorf("unable to create feed: %v", err)
 	}
 
-	fmt.Println("New feed was created:")
+	newFeedFollow := database.CreateFeedFollowParams{
+		ID:        uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		UserID:    user.ID,
+		FeedID:    feed.ID,
+	}
+
+	if _, err := s.db.CreateFeedFollow(ctx, newFeedFollow); err != nil {
+		return err
+	}
+
+	fmt.Printf("New feed was created and followed by %v:", user.Name)
 	fmt.Printf("* id: %v\n", feed.ID)
 	fmt.Printf("* created_id: %v\n", feed.CreatedAt)
 	fmt.Printf("* updated_at: %v\n", feed.UpdatedAt)
@@ -189,6 +201,61 @@ func handlerFeeds(s *state, cmd command) error {
 			return err
 		}
 		fmt.Printf("* Created by: %v\n", userName)
+	}
+	return nil
+}
+
+func handlerFollow(s *state, cmd command) error {
+	if len(cmd.args) < 1 {
+		return fmt.Errorf("this function expects a single URL argument")
+	}
+	ctx := context.Background()
+	feedURL := cmd.args[0]
+	username := s.cfg.CurrentUserName
+
+	feed, err := s.db.GetFeedFromURL(ctx, feedURL)
+	if err != nil {
+		return err
+	}
+
+	user, err := s.db.GetUser(ctx, username)
+	if err != nil {
+		return err
+	}
+
+	newFeedFollow := database.CreateFeedFollowParams{
+		ID:        uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		UserID:    user.ID,
+		FeedID:    feed.ID,
+	}
+
+	feedFollowRow, err := s.db.CreateFeedFollow(ctx, newFeedFollow)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("Feed: %v\n", feedFollowRow.FeedName)
+	fmt.Printf("Followed by: %v", feedFollowRow.UserName)
+	return nil
+}
+
+func handlerFollowing(s *state, cmd command) error {
+	ctx := context.Background()
+	username := s.cfg.CurrentUserName
+
+	user, err := s.db.GetUser(ctx, username)
+	if err != nil {
+		return err
+	}
+
+	feedsFollowsForUser, err := s.db.GetFeedFollowsForUser(ctx, user.ID)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("%v is following:\n", user.Name)
+	for _, feedFollowRow := range feedsFollowsForUser {
+		fmt.Printf("* %v\n", feedFollowRow.FeedName)
 	}
 	return nil
 }
