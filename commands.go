@@ -142,10 +142,7 @@ func handlerAddFeed(s *state, cmd command, user database.User) error {
 		return fmt.Errorf("this function expects 2 arguments: name and url of the feed")
 	}
 	ctx := context.Background()
-	user, err := s.db.GetUser(ctx, s.cfg.CurrentUserName)
-	if err != nil {
-		return err
-	}
+
 	feedName := cmd.args[0]
 	feedURL := cmd.args[1]
 
@@ -205,20 +202,14 @@ func handlerFeeds(s *state, cmd command) error {
 	return nil
 }
 
-func handlerFollow(s *state, cmd command) error {
+func handlerFollow(s *state, cmd command, user database.User) error {
 	if len(cmd.args) < 1 {
 		return fmt.Errorf("this function expects a single URL argument")
 	}
 	ctx := context.Background()
 	feedURL := cmd.args[0]
-	username := s.cfg.CurrentUserName
 
 	feed, err := s.db.GetFeedFromURL(ctx, feedURL)
-	if err != nil {
-		return err
-	}
-
-	user, err := s.db.GetUser(ctx, username)
 	if err != nil {
 		return err
 	}
@@ -240,14 +231,8 @@ func handlerFollow(s *state, cmd command) error {
 	return nil
 }
 
-func handlerFollowing(s *state, cmd command) error {
+func handlerFollowing(s *state, cmd command, user database.User) error {
 	ctx := context.Background()
-	username := s.cfg.CurrentUserName
-
-	user, err := s.db.GetUser(ctx, username)
-	if err != nil {
-		return err
-	}
 
 	feedsFollowsForUser, err := s.db.GetFeedFollowsForUser(ctx, user.ID)
 	if err != nil {
