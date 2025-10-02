@@ -12,3 +12,9 @@ RETURNING *;
 
 -- name: GetFeeds :many
 SELECT * FROM feeds;
+
+-- name: MarkFeedFetched :exec
+UPDATE feeds
+set last_fetched_at = $2,
+    updated_at = $3
+WHERE id = $1;
