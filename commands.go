@@ -244,3 +244,27 @@ func handlerFollowing(s *state, cmd command, user database.User) error {
 	}
 	return nil
 }
+
+func handlerUnfollow(s *state, cmd command, user database.User) error {
+	if len(cmd.args) < 1 {
+		return fmt.Errorf("this function expects a single URL argument")
+	}
+	ctx := context.Background()
+	feedURL := cmd.args[0]
+
+	feed, err := s.db.GetFeedFromURL(ctx, feedURL)
+	if err != nil {
+		return err
+	}
+
+	deleteParams := database.DeleteFeedFollowForUserParams{
+		FeedID: feed.ID,
+		UserID: user.ID,
+	}
+
+	if err := s.db.DeleteFeedFollowForUser(ctx, deleteParams); err != nil {
+		return err
+	}
+	fmt.Printf("%v unfollowed %v\n", user.Name, feed.Name)
+	return nil
+}
