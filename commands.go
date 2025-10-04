@@ -10,7 +10,6 @@ import (
 
 	"github.com/Gilgalad195/gatorcli/internal/config"
 	"github.com/Gilgalad195/gatorcli/internal/database"
-	"github.com/Gilgalad195/gatorcli/internal/webconn"
 	"github.com/google/uuid"
 )
 
@@ -128,13 +127,22 @@ func handlerUsers(s *state, cmd command) error {
 }
 
 func handlerAgg(s *state, cmd command) error {
-	ctx := context.Background()
-	rssFeed, err := webconn.FetchFeed(ctx, "https://www.wagslane.dev/index.xml")
+	if len(cmd.args) < 1 {
+		return fmt.Errorf("this function expects 1 arugment, a time interval in seconds (ex. 60s)")
+	}
+	interval := cmd.args[0]
+
+	timeBetweenRequests, err := time.ParseDuration(interval)
 	if err != nil {
 		return err
 	}
-	fmt.Printf("%+v\n", rssFeed)
-	return nil
+
+	ticker := time.NewTicker(timeBetweenRequests)
+	defer ticker.Stop()
+
+	for ; ; <-ticker.C {
+		scrapeFeeds(s)
+	}
 }
 
 func handlerAddFeed(s *state, cmd command, user database.User) error {
