@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/Gilgalad195/gatorcli/internal/config"
@@ -274,5 +275,37 @@ func handlerUnfollow(s *state, cmd command, user database.User) error {
 		return err
 	}
 	fmt.Printf("%v unfollowed %v\n", user.Name, feed.Name)
+	return nil
+}
+
+func handlerBrowse(s *state, cmd command, user database.User) error {
+	var limit int
+	if len(cmd.args) < 1 {
+		limit = 2
+	} else {
+		i, err := strconv.Atoi(cmd.args[0])
+		if err != nil {
+			limit = 2
+			log.Printf("an error occured: %v\n setting limit to default value of 2\n", err)
+		} else {
+			limit = i
+		}
+	}
+	ctx := context.Background()
+	getPostsParams := database.GetPostsForUserParams{
+		UserID: user.ID,
+		Limit:  int32(limit),
+	}
+
+	posts, err := s.db.GetPostsForUser(ctx, getPostsParams)
+	if err != nil {
+		return err
+	}
+
+	for _, post := range posts {
+		fmt.Printf("Title: %v\n Publication Date: %v\n", post.Title, post.PublishedAt)
+		fmt.Printf("Description: %v\n", post.Description.String)
+	}
+
 	return nil
 }

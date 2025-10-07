@@ -39,7 +39,7 @@ func scrapeFeeds(s *state) error {
 	}
 
 	for _, item := range feed.Channel.Item {
-		desc := sql.NullString{}
+		desc := sql.NullString{Valid: false}
 		if item.Description != "" {
 			desc = sql.NullString{String: item.Description, Valid: true}
 		}
