@@ -14,6 +14,7 @@ PostgreSQL installation:
      - sudo apt install postgresql postgresql-contrib
      - sudo passwd postgres //Linus only. Sets password.
         - enter a memorable password
+PostgreSQL documentation: https://docs.sqlc.dev/en/latest/tutorials/getting-started-postgresql.html
 
 Gator CLI requires a .json config file to run. In your home directory, manually create the following file: ~/.gatorconfig.json
 
